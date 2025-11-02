@@ -1,11 +1,13 @@
 ﻿
+
 namespace Snake
 {
     class Output
     {
         #region Properties
-        private string _displayText;     // Text to be displayed
-        private ConsoleColor _textColor; // Color of the text
+        private string _displayText;      // Text to be displayed
+        private ConsoleColor _textColor;  // Color of the text
+        private ConsoleColor _snakeColor; // Color of the snake
         #endregion
 
         #region Fields
@@ -20,6 +22,12 @@ namespace Snake
             get { return _textColor; }
             set { _textColor = value; }
         }
+
+        private ConsoleColor SnakeColor
+        {
+            get { return _snakeColor; }
+            set { _snakeColor = value; }
+        }
         #endregion
 
         #region Constructors
@@ -28,6 +36,7 @@ namespace Snake
         {
             _displayText = "";
             _textColor = ConsoleColor.White;
+            _snakeColor = ConsoleColor.Green;
         }
 
         // Copy constructor
@@ -35,6 +44,7 @@ namespace Snake
         {
             _displayText = other._displayText;
             _textColor = other._textColor;
+            _snakeColor = other._snakeColor;
         }
         #endregion
 
@@ -89,21 +99,39 @@ namespace Snake
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine(Styles.MainMenueArt);
 
-            Console.ForegroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(Styles.StartGameMenueOption);
+            Console.ResetColor();
+            Console.WriteLine(Styles.SettingsMenueOption);
             Console.WriteLine(Styles.HighScoresMenueOption);
             Console.WriteLine(Styles.ExitMenueOption);
         }
 
-        public void UpdateSnake(List<(int X, int Y)> bodySegments, (int X, int Y) delSegment, ConsoleColor snakeColor = ConsoleColor.Green)
+        public void SetSnakeColor(ConsoleColor color)
+        {
+            SnakeColor = color;
+        }
+
+        public void UpdateSnake(List<(int X, int Y)> bodySegments, (int X, int Y) delSegment)
         {
             Console.CursorVisible = false;
             for (int i = 0; i <= 1; i++)
             {
                 if (i == 0)
-                    Console.ForegroundColor = ConsoleColor.White; // Head color
+                {
+                    if (SnakeColor == ConsoleColor.White || SnakeColor == ConsoleColor.Gray)
+                        Console.ForegroundColor = ConsoleColor.DarkGray; // Head color
+                    else
+                        Console.ForegroundColor = ConsoleColor.White; // Head color
+                }
+                else if (SnakeColor == ConsoleColor.Black)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkGray; // Body color
+                }
                 else
-                    Console.ForegroundColor = snakeColor; // Body color
+                {
+                    Console.ForegroundColor = SnakeColor; // Body color
+                }
                 Console.SetCursorPosition(bodySegments[i].X, bodySegments[i].Y);
                 Console.Write("█");
             }
@@ -114,26 +142,43 @@ namespace Snake
             Console.ResetColor();
         }
 
-        public void GameOutline()
+        public void GameOutline((int Xstart, int Xend, int Ystart, int Yend) gameSize)
         {
             Console.CursorVisible = false;
             Console.Clear();
+            bool defaultSize = false;
+            ConsoleColor color = (ConsoleColor)(DateTime.Now.Ticks % 14);
+            if (color == ConsoleColor.Black)
+                color = ConsoleColor.DarkGray;
 
-            Console.SetCursorPosition(0, 1);
-            Console.Write("┌" + new string('─', 78) + "┐");
-            for (int i = 2; i < 24; i++)
+            // Check if the game size is the default size
+            if (gameSize == (1, 78, 2, 23))
             {
-                if (i == 5)
+                defaultSize = true;
+            }
+
+            Console.Write("Time Played: 00:00:00   Size: 005");
+            if (!defaultSize)
+                Console.Write("    Contine with any Key...");
+
+            Console.ForegroundColor = color;
+            Console.SetCursorPosition(0, gameSize.Ystart - 1);
+            Console.Write("┌" + new string('─', gameSize.Xend) + "┐");
+            for (int i = gameSize.Ystart; i < gameSize.Yend + 1; i++)
+            {
+                if (i == 5 && defaultSize)
                 {
+                    // Display "Press Any Key to Start" in the middle of the game area if the gamesize is the default size
                     Console.SetCursorPosition(0, i);
                     Console.Write(Styles.PressAnyKeyToStart);
                 }
                 Console.SetCursorPosition(0, i);
                 Console.Write("│");
-                Console.SetCursorPosition(79, i);
+                Console.SetCursorPosition(gameSize.Xend + 1, i);
                 Console.Write("│");
             }
-            Console.Write("└" + new string('─', 78) + "┘");
+            Console.SetCursorPosition(0, Console.GetCursorPosition().Top + 1);
+            Console.Write("└" + new string('─', gameSize.Xend) + "┘");
         }
 
         public void SpawnFood((int X, int Y) position, ConsoleColor foodColor = ConsoleColor.Red)
@@ -156,6 +201,26 @@ namespace Snake
             Console.SetCursorPosition(0, 20);
             Console.WriteLine(Styles.PressAnyKeyArt);
             Console.ResetColor();
+        }
+
+        public void UpdateGameTime(TimeSpan timeSpan)
+        {
+            Console.SetCursorPosition(0, 0);
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write($"Time Played: {timeSpan:hh\\:mm\\:ss}   ");
+        }
+
+        public void UpdateSnakeSize(int size)
+        {
+            Console.SetCursorPosition(24, 0);
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write($"Size: ");
+            if (size < 10)
+                Console.Write($"00{size}");
+            else if (size < 100)
+                Console.Write($"0{size}");
+            else
+                Console.Write($"{size}");
         }
         #endregion
     }
