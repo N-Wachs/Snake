@@ -514,7 +514,7 @@ namespace Snake
             DateTime nextTick = startTime; // Game ticks
             DateTime nextSuperFood = startTime;
             DateTime gameTime = startTime;
-            Snake playerSnake = new Snake(5, (gameSize.Xend/2 + gameSize.Xstart, gameSize.Yend/2 + gameSize.Ystart));
+            Snake playerSnake = new Snake(5, (gameSize.Xend / 2 + gameSize.Xstart, gameSize.Yend / 2 + gameSize.Ystart));
             (int X, int Y) lastBodyPosition = (0, 0);
             (int X, int Y) direction = (1, 0); // Initial direction to the right
             List<(int X, int Y)> superFoodPosition = new List<(int X, int Y)> { (rand.Next(gameSize.Xstart, gameSize.Xend), rand.Next(gameSize.Ystart, gameSize.Yend)) };
@@ -727,31 +727,29 @@ namespace Snake
             if (!Directory.Exists("Highscores"))
             {
                 Directory.CreateDirectory("Highscores");
-                File.Create("Highscores/highscores.txt").Close();
+                File.WriteAllText("Highscores/highscores.txt", "0;0");
             }
             else if (!File.Exists("Highscores/highscores.txt"))
             {
-                File.Create("Highscores/highscores.txt").Close();
+                File.WriteAllText("Highscores/highscores.txt", "0;0");
             }
-            else
+
+            // Reading existing highscores
+            BigInteger highscoreTicks = BigInteger.Parse(File.ReadAllText("Highscores/highscores.txt").Split(';')[0]);
+            int highscoreFood = int.Parse(File.ReadAllText("Highscores/highscores.txt").Split(';')[1]);
+
+            // Updating highscores if beaten
+            if (highscoreFood < visibleLength)
             {
-                // Reading existing highscores
-                BigInteger highscoreTicks = BigInteger.Parse(File.ReadAllText("Highscores/highscores.txt").Split(';')[0]);
-                int highscoreFood = int.Parse(File.ReadAllText("Highscores/highscores.txt").Split(';')[1]);
-
-                // Updating highscores if beaten
-                if (highscoreFood < visibleLength)
-                {
-                    highscoreFood = visibleLength;
-                }
-                if (highscoreTicks < ticksPlayed)
-                {
-                    highscoreTicks = ticksPlayed;
-                }
-
-                // Writing updated highscores back to the file
-                File.WriteAllText("Highscores/highscores.txt", highscoreTicks.ToString() + ";" + highscoreFood.ToString(), System.Text.Encoding.UTF8);
+                highscoreFood = visibleLength;
             }
+            if (highscoreTicks < ticksPlayed)
+            {
+                highscoreTicks = ticksPlayed;
+            }
+
+            // Writing updated highscores back to the file
+            File.WriteAllText("Highscores/highscores.txt", highscoreTicks.ToString() + ";" + highscoreFood.ToString(), System.Text.Encoding.UTF8);
 
             ConOutput.GameOver();
             KbdInput.ReadKey();
