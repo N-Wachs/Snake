@@ -13,7 +13,6 @@
             get { return _bodySegments; }
             set { _bodySegments = value; }
         }
-
         private ConsoleColor SnakeColor
         {
             get { return _snakeColor; }
