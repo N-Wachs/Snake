@@ -2,12 +2,12 @@
 {
     class Snake
     {
-        #region Properties
+        #region Fields
         private List<(int X, int Y)> _bodySegments; // List of body segments represented by their coordinates
         private ConsoleColor _snakeColor;          // Color of the snake
         #endregion
 
-        #region Fields
+        #region Properties
         private List<(int X, int Y)> BodySegments
         {
             get { return _bodySegments; }

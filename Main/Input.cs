@@ -2,12 +2,12 @@
 {
     class Input
     {
-        #region Properties
+        #region Fields
         private Output _conOutput; // Output handler for displaying messages
         private ConsoleKeyInfo _pressed; // Stores the last pressed key
         #endregion
 
-        #region Fields
+        #region Properties
         private Output OHandler
         {
             get { return _conOutput; }

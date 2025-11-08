@@ -1,16 +1,15 @@
-﻿using System.Net.Sockets;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Snake
 {
     class Controller
     {
-        #region Properties
+        #region Fields
         private Input _kbdInput; // Input handler for managing user input
         private Output _conOutput; // Output handler for displaying messages
         #endregion
 
-        #region Fields
+        #region Properties
         private Input KbdInput
         {
             get { return _kbdInput; }

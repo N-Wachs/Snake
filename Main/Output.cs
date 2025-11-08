@@ -2,13 +2,13 @@
 {
     class Output
     {
-        #region Properties
+        #region Fields
         private string _displayText;      // Text to be displayed
         private ConsoleColor _textColor;  // Color of the text
         private ConsoleColor _snakeColor; // Color of the snake
         #endregion
 
-        #region Fields
+        #region Properties
         private string DisplayText
         {
             get { return _displayText; }
