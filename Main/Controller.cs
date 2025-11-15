@@ -58,7 +58,7 @@ namespace Snake
                 {
                     pressed = KbdInput.ReadKey();
 
-                    if (pressed.Key == ConsoleKey.UpArrow)
+                    if (pressed.Key == ConsoleKey.UpArrow || pressed.Key == ConsoleKey.W)
                     {
                         // Erasing the current option highlight
                         Console.SetCursorPosition(0, 7 + (option * 4));
@@ -88,7 +88,7 @@ namespace Snake
                         ConOutput.WriteText();
 
                     }
-                    else if (pressed.Key == ConsoleKey.DownArrow)
+                    else if (pressed.Key == ConsoleKey.DownArrow || pressed.Key == ConsoleKey.S)
                     {
                         // Erasing the current option highlight
                         Console.SetCursorPosition(0, 7 + (option * 4));
@@ -237,7 +237,7 @@ namespace Snake
                 pressed = KbdInput.ReadKey();
 
                 // If Left or Right arrow is pressed, change the option
-                if (pressed.Key == ConsoleKey.LeftArrow)
+                if (pressed.Key == ConsoleKey.LeftArrow || pressed.Key == ConsoleKey.A)
                 {
                     #region Erase current option highlight
                     if (option == 0)
@@ -317,7 +317,7 @@ namespace Snake
                     }
                     #endregion
                 }
-                else if (pressed.Key == ConsoleKey.RightArrow)
+                else if (pressed.Key == ConsoleKey.RightArrow || pressed.Key == ConsoleKey.D)
                 {
                     #region Erase current option highlight
                     if (option == 0)
@@ -398,7 +398,7 @@ namespace Snake
                     #endregion
 
                 }
-                else if (pressed.Key == ConsoleKey.UpArrow)
+                else if (pressed.Key == ConsoleKey.UpArrow || pressed.Key == ConsoleKey.W)
                 {
                     if (option == 0)
                     {
@@ -447,7 +447,7 @@ namespace Snake
                         ConOutput.WriteText();
                     }
                 }
-                else if (pressed.Key == ConsoleKey.DownArrow)
+                else if (pressed.Key == ConsoleKey.DownArrow || pressed.Key == ConsoleKey.S)
                 {
                     if (option == 0)
                     {
@@ -600,7 +600,15 @@ namespace Snake
                             if (direction != (0, 1)) // Prevent reversing direction
                                 direction = (0, -1);
                             break;
+                        case ConsoleKey.W:
+                            if (direction != (0, 1)) // Prevent reversing direction
+                                direction = (0, -1);
+                            break;
                         case ConsoleKey.DownArrow:
+                            if (direction != (0, -1))
+                                direction = (0, 1);
+                            break;
+                        case ConsoleKey.S:
                             if (direction != (0, -1))
                                 direction = (0, 1);
                             break;
@@ -608,7 +616,15 @@ namespace Snake
                             if (direction != (1, 0))
                                 direction = (-1, 0);
                             break;
+                        case ConsoleKey.A:
+                            if (direction != (1, 0))
+                                direction = (-1, 0);
+                            break;
                         case ConsoleKey.RightArrow:
+                            if (direction != (-1, 0))
+                                direction = (1, 0);
+                            break;
+                        case ConsoleKey.D:
                             if (direction != (-1, 0))
                                 direction = (1, 0);
                             break;
