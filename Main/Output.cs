@@ -6,25 +6,46 @@
         private string _displayText;      // Text to be displayed
         private ConsoleColor _textColor;  // Color of the text
         private ConsoleColor _snakeColor; // Color of the snake
+        private bool _cursorVisible;      // Cursor visibility
+        private Input _kbInput;           // Keyboard input handler
         #endregion
 
         #region Properties
-        private string DisplayText
+        public string DisplayText
         {
             get { return _displayText; }
             set { _displayText = value; }
         }
 
-        private ConsoleColor TextColor
+        public ConsoleColor TextColor
         {
             get { return _textColor; }
-            set { _textColor = value; }
+            set { _textColor = value; Console.ForegroundColor = value; }
         }
 
-        private ConsoleColor SnakeColor
+        public ConsoleColor SnakeColor
         {
             get { return _snakeColor; }
             set { _snakeColor = value; }
+        }
+
+        public bool CursorVisible
+        {
+            get { return _cursorVisible; }
+            set { _cursorVisible = value; Console.CursorVisible = value; }
+        }
+
+        private Input KbdInput
+        {
+            get
+            {
+                if (_kbInput == null)
+                {
+                    _kbInput = new Input();
+                }
+                return _kbInput;
+            }
+            set { _kbInput = value; }
         }
         #endregion
 
@@ -48,17 +69,43 @@
 
         #region Methods
         // Method to display text with the specified color
-        public void WriteText(bool clear = false)
+        public void WriteText(string output = "", bool clear = false)
         {
-            Console.CursorVisible = false;
+            CursorVisible = false;
             if (clear)
             {
-                Console.Clear();
+                Clear();
             }
-            Console.ForegroundColor = TextColor;
-            Console.WriteLine(DisplayText);
-            Console.ResetColor();
+            if (output == "")
+                output = DisplayText;
+
+            Console.WriteLine(output);
+            ResetColor();
         }
+        public void WriteLine(string output = "", bool clear = false)
+        {
+            CursorVisible = false;
+            if (clear)
+            {
+                Clear();
+            }
+            if (output == "")
+                output = DisplayText;
+
+            Console.WriteLine(output);
+            ResetColor();
+        }
+
+        public void Write(string output)
+        {
+            CursorVisible = false;
+            Console.Write(output);
+        }
+
+        public void ResetColor() => TextColor = ConsoleColor.White;
+        public void SetPos(int x, int y) => Console.SetCursorPosition(x, y);
+        public void SetPos((int x, int y) pos) => Console.SetCursorPosition(pos.x, pos.y);
+        public (int x, int y) GetPos() => Console.GetCursorPosition();
 
         // Method to set the display text and color
         public void SetOutput(string text, ConsoleColor color = ConsoleColor.White)
@@ -67,48 +114,149 @@
             TextColor = color;
         }
 
-        public void ClearConsole()
+        public void Clear() => Console.Clear();
+
+        // Method to clear a specific line area
+        public void ClearArea(int x, int y, int width)
         {
-            Console.CursorVisible = false;
-            Console.Clear();
+            SetPos(x, y);
+            Write(new string(' ', width));
+        }
+
+        // Method to write text at a specific position
+        public void WriteAt(int x, int y, string text, ConsoleColor color = ConsoleColor.White)
+        {
+            SetPos(x, y);
+            TextColor = color;
+            Write(text);
+            ResetColor();
+        }
+
+        // Method to set window size
+        public void SetWindowSize(int width, int height)
+        {
+            Console.WindowWidth = width;
+            Console.WindowHeight = height;
         }
 
         // The Welcomescreen
         public void WelcomeScreen()
         {
-            Console.CursorVisible = false;
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WindowHeight = 25;
-            Console.WindowWidth = 80;
-            Console.SetCursorPosition(10, 6);
-            Console.WriteLine(Styles.WelcomeArt);
+            CursorVisible = false;
+            Clear();
+            TextColor = ConsoleColor.Green;
+            SetWindowSize(80, 25);
+            SetPos(10, 6);
+            WriteLine(Styles.WelcomeArt);
 
-            Console.SetCursorPosition(0, 20);
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(Styles.PressAnyKeyArt);
-            Console.ResetColor();
+            SetPos(0, 20);
+            TextColor = ConsoleColor.Cyan;
+            WriteLine(Styles.PressAnyKeyArt);
+            ResetColor();
         }
 
-        public void MainMenue()
+        public int MainMenu()
         {
-            Console.CursorVisible = false;
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(Styles.MainMenueArt);
+            CursorVisible = false;
+            Clear();
+            TextColor = ConsoleColor.Yellow;
+            WriteLine(Styles.MainMenueArt);
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(Styles.StartGameMenueOption);
-            Console.ResetColor();
-            Console.WriteLine(Styles.SettingsMenueOption);
-            Console.WriteLine(Styles.HighScoresMenueOption);
-            Console.WriteLine(Styles.ExitMenueOption);
+            TextColor = ConsoleColor.Green;
+            WriteLine(Styles.StartGameMenueOption);
+            ResetColor();
+            WriteLine(Styles.SettingsMenueOption);
+            WriteLine(Styles.HighScoresMenueOption);
+            WriteLine(Styles.ExitMenueOption);
+
+            bool repeat = true;
+            int option = 0;
+
+            do
+            {
+                ConsoleKeyInfo pressed = KbdInput.ReadKey();
+
+                if (pressed.Key == ConsoleKey.UpArrow || pressed.Key == ConsoleKey.W)
+                {
+                    // Erasing the current option highlight
+                    SetPos(0, 7 + (option * 4));
+                    if (option == 0)
+                        SetOutput(Styles.StartGameMenueOption, ConsoleColor.White);
+                    else if (option == 1)
+                        SetOutput(Styles.SettingsMenueOption, ConsoleColor.White);
+                    else if (option == 2)
+                        SetOutput(Styles.HighScoresMenueOption, ConsoleColor.White);
+                    else if (option == 3)
+                        SetOutput(Styles.ExitMenueOption, ConsoleColor.White);
+                    WriteText();
+
+                    // Setting the new option with wrap-around
+                    option = (option - 1 + 4) % 4;
+
+                    // Highlighting the new option
+                    SetPos(0, 7 + (option * 4));
+                    if (option == 0)
+                        SetOutput(Styles.StartGameMenueOption, ConsoleColor.Green);
+                    else if (option == 1)
+                        SetOutput(Styles.SettingsMenueOption, ConsoleColor.Green);
+                    else if (option == 2)
+                        SetOutput(Styles.HighScoresMenueOption, ConsoleColor.Green);
+                    else if (option == 3)
+                        SetOutput(Styles.ExitMenueOption, ConsoleColor.Green);
+                    WriteText();
+
+                }
+                else if (pressed.Key == ConsoleKey.DownArrow || pressed.Key == ConsoleKey.S)
+                {
+                    // Erasing the current option highlight
+                    SetPos(0, 7 + (option * 4));
+                    if (option == 0)
+                        SetOutput(Styles.StartGameMenueOption, ConsoleColor.White);
+                    else if (option == 1)
+                        SetOutput(Styles.SettingsMenueOption, ConsoleColor.White);
+                    else if (option == 2)
+                        SetOutput(Styles.HighScoresMenueOption, ConsoleColor.White);
+                    else if (option == 3)
+                        SetOutput(Styles.ExitMenueOption, ConsoleColor.White);
+                    WriteText();
+
+                    // Setting the new option with wrap-around
+                    option = (option + 1) % 4; // Wrap around the options
+
+                    // Highlighting the new option
+                    SetPos(0, 7 + (option * 4));
+                    if (option == 0)
+                        SetOutput(Styles.StartGameMenueOption, ConsoleColor.Green);
+                    else if (option == 1)
+                        SetOutput(Styles.SettingsMenueOption, ConsoleColor.Green);
+                    else if (option == 2)
+                        SetOutput(Styles.HighScoresMenueOption, ConsoleColor.Green);
+                    else if (option == 3)
+                        SetOutput(Styles.ExitMenueOption, ConsoleColor.Green);
+                    WriteText();
+
+                }
+                else if (pressed.Key == ConsoleKey.Enter)
+                {
+                    // Select the current option
+                    if (option >= 0 && option <= 3)
+                    {
+                        return option; // Exit the method to proceed with the selected option
+                    }
+                    else
+                    {
+                        // Error handling for unexpected option values
+                        // Setting repeat to false to avoid infinite loop
+                        throw new InvalidOperationException("Invalid menu option selected. HOW???");
+                    }
+                }
+
+            } while (repeat);
+
+            return option;
         }
 
-        public void SetSnakeColor(ConsoleColor color)
-        {
-            SnakeColor = color;
-        }
+        public void SetSnakeColor(ConsoleColor color) => SnakeColor = color;
 
         public void UpdateSnake(List<(int X, int Y)> bodySegments, (int X, int Y) delSegment)
         {
@@ -219,6 +367,73 @@
                 Console.Write($"0{size}");
             else
                 Console.Write($"{size}");
+        }
+
+        public void Warning(string message)
+        {
+            TextColor = ConsoleColor.Red;
+            WriteLine("Error: " + message);
+            ResetColor();
+        }
+
+        public void Error(string message)
+        {
+            TextColor = ConsoleColor.Yellow;
+            WriteLine("Warning: " + message);
+            ResetColor();
+        }
+
+        public void ShowHighscores(TimeSpan timePlayed, int highscoreFood)
+        {
+            // Writing the highscores header
+            TextColor = ConsoleColor.Yellow;
+            WriteText("Highscores:\n", true);
+
+            // Displaying the highscores
+            TextColor = ConsoleColor.Cyan;
+            WriteLine($"Longest Time Survived: {timePlayed.Minutes}m {timePlayed.Seconds}s {timePlayed.Milliseconds}ms\n");
+            WriteLine($"Most Food Eaten: {highscoreFood}\n");
+            TextColor = ConsoleColor.Green;
+            WriteLine("\nPress any key to return to the main menu.");
+            ResetColor();
+            KbdInput.ReadKey();
+        }
+
+        public void SettingsMenu(int tickLengthMs, (int Xstart, int Xend, int Ystart, int Yend) gameSize, ConsoleColor snakeColor)
+        {
+            Clear();
+            SetOutput("SETTINGS MENUE\n", ConsoleColor.Yellow);
+            WriteText();
+
+            SetOutput("Tick Speed:", ConsoleColor.Cyan);
+            WriteText();
+            SetOutput(tickLengthMs.ToString() + "ms ", ConsoleColor.Green);
+            WriteText();
+
+            SetPos(13, 2);
+            SetOutput("Game Size:");
+            WriteText();
+            SetPos(13, 3);
+            SetOutput($"X: {gameSize.Xend - gameSize.Xstart + 1}");
+            WriteText();
+            SetPos(19, 3);
+            SetOutput($"Y: {gameSize.Yend - gameSize.Ystart + 1}");
+            WriteText();
+
+            SetPos(25, 2);
+            SetOutput("Snake Color:");
+            WriteText();
+            SetPos(25, 3);
+            SetOutput(snakeColor.ToString());
+            WriteText();
+
+            SetPos(0, 7);
+            SetOutput("Use Left/Right arrows to navigate options.\n", ConsoleColor.Yellow);
+            WriteText();
+            SetOutput("Use Up/Down arrows to change values.\n", ConsoleColor.Yellow);
+            WriteText();
+            SetOutput("Press Enter to return to the main menu.", ConsoleColor.Yellow);
+            WriteText();
         }
         #endregion
     }
