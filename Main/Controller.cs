@@ -33,7 +33,7 @@ namespace Snake
 
         #region Methods
         // Method to start the controller operations
-        public async Task Run()
+        public void Run()
         {
             #region Variables
             bool repeat = true;
@@ -47,7 +47,9 @@ namespace Snake
             ConOutput.WelcomeScreen();
             KbdInput.ReadKey();
 
-            await CheckForUpdatesAsync();
+            CheckForUpdatesAsync();
+
+            Thread.Sleep(500);
 
             // Main menu loop
             do
@@ -163,7 +165,7 @@ namespace Snake
         private async Task CheckForUpdatesAsync()
         {
             string versionUrl = "https://raw.githubusercontent.com/N-Wachs/Snake/main/version.txt";
-            string currentVersion = "v1.2.0";
+            string currentVersion = "1.2.0";
 
             try
             {
