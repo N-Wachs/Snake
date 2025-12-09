@@ -45,119 +45,38 @@ namespace Snake
             #endregion
 
             ConOutput.WelcomeScreen();
-            KbdInput.ReadKey();
-
             CheckForUpdatesAsync();
+            KbdInput.ReadKey();
 
             Thread.Sleep(500);
 
             // Main menu loop
             do
             {
-                repeat = true;
-                ConOutput.MainMenue();
-                int option = 0;
+                int option = ConOutput.MainMenu();
 
-                do
+                if (option == 0)
                 {
-                    pressed = KbdInput.ReadKey();
-
-                    if (pressed.Key == ConsoleKey.UpArrow || pressed.Key == ConsoleKey.W)
-                    {
-                        // Erasing the current option highlight
-                        Console.SetCursorPosition(0, 7 + (option * 4));
-                        if (option == 0)
-                            ConOutput.SetOutput(Styles.StartGameMenueOption, ConsoleColor.White);
-                        else if (option == 1)
-                            ConOutput.SetOutput(Styles.SettingsMenueOption, ConsoleColor.White);
-                        else if (option == 2)
-                            ConOutput.SetOutput(Styles.HighScoresMenueOption, ConsoleColor.White);
-                        else if (option == 3)
-                            ConOutput.SetOutput(Styles.ExitMenueOption, ConsoleColor.White);
-                        ConOutput.WriteText();
-
-                        // Setting the new option with wrap-around
-                        option = (option - 1 + 4) % 4;
-
-                        // Highlighting the new option
-                        Console.SetCursorPosition(0, 7 + (option * 4));
-                        if (option == 0)
-                            ConOutput.SetOutput(Styles.StartGameMenueOption, ConsoleColor.Green);
-                        else if (option == 1)
-                            ConOutput.SetOutput(Styles.SettingsMenueOption, ConsoleColor.Green);
-                        else if (option == 2)
-                            ConOutput.SetOutput(Styles.HighScoresMenueOption, ConsoleColor.Green);
-                        else if (option == 3)
-                            ConOutput.SetOutput(Styles.ExitMenueOption, ConsoleColor.Green);
-                        ConOutput.WriteText();
-
-                    }
-                    else if (pressed.Key == ConsoleKey.DownArrow || pressed.Key == ConsoleKey.S)
-                    {
-                        // Erasing the current option highlight
-                        Console.SetCursorPosition(0, 7 + (option * 4));
-                        if (option == 0)
-                            ConOutput.SetOutput(Styles.StartGameMenueOption, ConsoleColor.White);
-                        else if (option == 1)
-                            ConOutput.SetOutput(Styles.SettingsMenueOption, ConsoleColor.White);
-                        else if (option == 2)
-                            ConOutput.SetOutput(Styles.HighScoresMenueOption, ConsoleColor.White);
-                        else if (option == 3)
-                            ConOutput.SetOutput(Styles.ExitMenueOption, ConsoleColor.White);
-                        ConOutput.WriteText();
-
-                        // Setting the new option with wrap-around
-                        option = (option + 1) % 4; // Wrap around the options
-
-                        // Highlighting the new option
-                        Console.SetCursorPosition(0, 7 + (option * 4));
-                        if (option == 0)
-                            ConOutput.SetOutput(Styles.StartGameMenueOption, ConsoleColor.Green);
-                        else if (option == 1)
-                            ConOutput.SetOutput(Styles.SettingsMenueOption, ConsoleColor.Green);
-                        else if (option == 2)
-                            ConOutput.SetOutput(Styles.HighScoresMenueOption, ConsoleColor.Green);
-                        else if (option == 3)
-                            ConOutput.SetOutput(Styles.ExitMenueOption, ConsoleColor.Green);
-                        ConOutput.WriteText();
-
-                    }
-                    else if (pressed.Key == ConsoleKey.Enter)
-                    {
-                        // Select the current option
-                        if (option == 0)
-                        {
-                            // Start Game
-                            StartGame(tickLengthMs, gameSize, snakeColor);
-                            repeat = false;
-                        }
-                        else if (option == 1)
-                        {
-                            // Change Settings
-                            SettingsMenu(ref tickLengthMs, ref gameSize, ref snakeColor);
-                            repeat = false;
-                        }
-                        else if (option == 2)
-                        {
-                            // Show Highscores
-                            ShowHighscores();
-                            repeat = false;
-                        }
-                        else if (option == 3)
-                        {
-                            // Exit
-                            repeat = false;
-                            exit = true;
-                        }
-                        else
-                        {
-                            // Error handling for unexpected option values
-                            // Setting repeat to false to avoid infinite loop
-                            repeat = false;
-                        }
-                    }
-
-                } while (repeat);
+                    // Start Game
+                    StartGame(tickLengthMs, gameSize, snakeColor);
+                }
+                else if (option == 1)
+                {
+                    // Settings Menu
+                    SettingsMenu(ref tickLengthMs, ref gameSize, ref snakeColor);
+                }
+                else if (option == 2)
+                {
+                    // Show Highscores
+                    ShowHighscores();
+                }
+                else if (option == 3)
+                {
+                    // Exit
+                    ConOutput.TextColor = ConsoleColor.Cyan;
+                    ConOutput.WriteLine("Goodbye!", true);
+                    exit = true;
+                }
             } while (!exit);
         }
 
@@ -198,8 +117,8 @@ namespace Snake
         private void ShowHighscores()
         {
             // Writing the highscores header
-            ConOutput.SetOutput("Highscores:\n", ConsoleColor.Yellow);
-            ConOutput.WriteText(true);
+            ConOutput.TextColor = ConsoleColor.Yellow;
+            ConOutput.WriteText("Highscores:\n", true);
 
             if (File.Exists("Highscores/highscores.txt"))
             {
@@ -234,7 +153,7 @@ namespace Snake
             bool repeat = true;
 
             #region Initial Settings Menu Display
-            ConOutput.ClearConsole();
+            ConOutput.Clear();
             ConOutput.SetOutput("SETTINGS MENUE\n", ConsoleColor.Yellow);
             ConOutput.WriteText();
 
