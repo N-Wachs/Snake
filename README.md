@@ -34,6 +34,16 @@
 
 - Kleinere Fenster können Darstellungsprobleme verursachen
 
+## Nutzung
+
+- Die Highscores werden im <Anwendungsverzeichnis>/<Highscores> als .txt gespeichert
+
+- Im Hauptmenü mit W/A/S/D oder ↑/←/↓/→ navigieren und mit Enter bestätigen
+
+- Beim Spielen wie beim Hauptmenü bewegen und man kann mit ESC abbrechen (Highscore bis dahin wird gespeichert)
+
+- Die Farbe der Umrandung beim Spielfeld wird immer zufällig ausgewählt
+
 ## Lizenz
 
 - Dieses Projekt steht unter der MIT License.
