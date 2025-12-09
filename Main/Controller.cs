@@ -33,7 +33,7 @@ namespace Snake
 
         #region Methods
         // Method to start the controller operations
-        public void Run()
+        public async Task Run()
         {
             #region Variables
             bool repeat = true;
@@ -46,6 +46,8 @@ namespace Snake
 
             ConOutput.WelcomeScreen();
             KbdInput.ReadKey();
+
+            await CheckForUpdatesAsync();
 
             // Main menu loop
             do
@@ -157,6 +159,40 @@ namespace Snake
             } while (!exit);
         }
 
+
+        private async Task CheckForUpdatesAsync()
+        {
+            string versionUrl = "https://raw.githubusercontent.com/N-Wachs/Snake/main/version.txt";
+            string currentVersion = "v1.2.0";
+
+            try
+            {
+                using HttpClient client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(5); // Timeout nach 5 Sekunden
+
+                string latestVersion = await client.GetStringAsync(versionUrl);
+                latestVersion = latestVersion.Trim();
+
+                if (latestVersion != currentVersion)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine($"\nUpdate verfügbar: {latestVersion} (du hast {currentVersion})");
+                    Console.WriteLine("Download: https://github.com/N-Wachs/Snake/releases/latest");
+                    Console.ResetColor();
+                    Console.WriteLine("Sie können aber ohne aktualisierung forfahren mit Enter...");
+                    while (KbdInput.ReadKey().Key != ConsoleKey.Enter) 
+                    { Thread.Sleep(100); }
+                }
+            }
+            catch (HttpRequestException)
+            {
+                // Netzwerkfehler ignorieren - Spiel läuft trotzdem
+            }
+            catch (TaskCanceledException)
+            {
+                // Timeout ignorieren
+            }
+        }
         private void ShowHighscores()
         {
             // Writing the highscores header
