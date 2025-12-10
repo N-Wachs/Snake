@@ -1,6 +1,6 @@
 ﻿namespace Snake
 {
-    class Input
+    public class Input
     {
         #region Fields
         private Output _conOutput; // Output handler for displaying messages
