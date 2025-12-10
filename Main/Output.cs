@@ -1,4 +1,6 @@
-﻿namespace Snake
+﻿using System.Numerics;
+
+namespace Snake
 {
     public class Output
     {
@@ -293,7 +295,7 @@
             Console.CursorVisible = false;
             Console.Clear();
             bool defaultSize = false;
-            ConsoleColor color = (ConsoleColor)(DateTime.Now.Ticks % 14);
+            ConsoleColor color = (ConsoleColor)(DateTime.UtcNow.Ticks % 14);
             if (color == ConsoleColor.Black)
                 color = ConsoleColor.DarkGray;
 
@@ -325,6 +327,15 @@
             }
             Console.SetCursorPosition(0, Console.GetCursorPosition().Top + 1);
             Console.Write("└" + new string('─', gameSize.Xend) + "┘");
+        }
+
+        public void SpawnFood(Vector2 position, ConsoleColor foodColor = ConsoleColor.Red)
+        {
+            Console.CursorVisible = false;
+            Console.ForegroundColor = foodColor;
+            Console.SetCursorPosition((int)position.X, (int)position.Y);
+            Console.Write("█");
+            Console.ResetColor();
         }
 
         public void SpawnFood((int X, int Y) position, ConsoleColor foodColor = ConsoleColor.Red)

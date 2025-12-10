@@ -7,6 +7,7 @@ public class GameController
     #region Fields
     private Output _conOutput; // Output handler for displaying messages
     private Input _conInput; // Input handler for reading user input
+    private Random _random; // Random number generator for object pooling
     #endregion
 
     #region Properties
@@ -28,6 +29,7 @@ public class GameController
     {
         _conOutput = new Output();
         _conInput = new Input();
+        _random = new Random();
     }
 
     // Parameterized constructor
@@ -35,6 +37,7 @@ public class GameController
     {
         _conOutput = output;
         _conInput = input;
+        _random = new Random();
     }
 
     // Copy constructor
@@ -42,6 +45,7 @@ public class GameController
     {
         _conOutput = new Output(other._conOutput);
         _conInput = new Input(other._conInput);
+        _random = new Random();
     }
     #endregion
 
@@ -50,18 +54,20 @@ public class GameController
     public void StartGame(int tickLengthMs, (int Xstart, int Xend, int Ystart, int Yend) gameSize, ConsoleColor snakeColor)
     {
         #region Game Variables
-        Random rand = new Random();
-        DateTime startTime = DateTime.Now;
-        DateTime nextTick = startTime; // Game ticks
+        DateTime startTime = DateTime.UtcNow;
+        DateTime nextTick = startTime;
         DateTime nextSuperFood = startTime;
         DateTime gameTime = startTime;
         Snake playerSnake = new Snake(5, (gameSize.Xend / 2 + gameSize.Xstart, gameSize.Yend / 2 + gameSize.Ystart));
         (int X, int Y) lastBodyPosition = (0, 0);
         (int X, int Y) direction = (1, 0); // Initial direction to the right
-        List<(int X, int Y)> superFoodPosition = new List<(int X, int Y)> { (rand.Next(gameSize.Xstart, gameSize.Xend), rand.Next(gameSize.Ystart, gameSize.Yend)) };
-        (int X, int Y) foodPosition = (rand.Next(gameSize.Xstart, gameSize.Xend), rand.Next(gameSize.Ystart, gameSize.Yend));
+        List<SuperApple> specialFoods = new List<SuperApple>();
+        specialFoods.Add(new SuperApple());
+        specialFoods[0].SetApple(gameSize, _random);
+        List<SuperApple> superApplePool = new List<SuperApple>();
+        Apple normalFood = new Apple();
+        normalFood.SetApple(gameSize, _random);
         BigInteger ticksPlayed = 0;
-        int superFoodCount = 1;
         int length = 5;
         int visibleLength = 2;
         ConsoleKeyInfo pressedKey;
@@ -88,11 +94,11 @@ public class GameController
         {
             ConOutput.WriteAt(36, 0, "                           ");
         }
-        startTime = DateTime.Now;
+        startTime = DateTime.UtcNow;
         nextTick = startTime;
         nextSuperFood = startTime.AddSeconds(30);
-        ConOutput.SpawnFood(foodPosition);
-        ConOutput.SpawnFood(superFoodPosition.Last(), ConsoleColor.Magenta);
+        ConOutput.SpawnFood(normalFood.GetPositionTuple(), normalFood.AppleColor);
+        ConOutput.SpawnFood(specialFoods[0].GetPositionTuple(), specialFoods[0].AppleColor);
         #endregion
 
         // Main game loop
@@ -113,18 +119,18 @@ public class GameController
             }
 
             // Waiting for the next tick
-            while (DateTime.Now < nextTick) ;
+            while (DateTime.UtcNow < nextTick) ;
             ticksPlayed++;
 
-            if (gameTime.AddSeconds(1) < DateTime.Now)
+            if (gameTime.AddSeconds(1) < DateTime.UtcNow)
             {
                 // Updating the game time every second
                 gameTime = gameTime.AddSeconds(1);
-                ConOutput.UpdateGameTime(DateTime.Now - startTime);
+                ConOutput.UpdateGameTime(DateTime.UtcNow - startTime);
             }
 
             // The next tick
-            nextTick = nextTick.AddMilliseconds(tickLengthMs); // Game tick every 75 ms rn
+            nextTick = nextTick.AddMilliseconds(tickLengthMs);
 
             // Saving the last body position for erasing
             lastBodyPosition = playerSnake.GetBodySegments().Last();
@@ -175,8 +181,8 @@ public class GameController
                         while (!KbdInput.IsKeyAvailable() || KbdInput.ReadKey().Key != ConsoleKey.Spacebar)
                         {
                             // Continuing the Ticks in the pause so the game doesn't speed up after unpausing
-                            while (DateTime.Now < nextTick) ;
-                            nextTick = nextTick.AddMilliseconds(75); // Game tick every 75 ms
+                            while (DateTime.UtcNow < nextTick) ;
+                            nextTick = nextTick.AddMilliseconds(tickLengthMs);
                         }
                         break;
                     default:
@@ -197,61 +203,87 @@ public class GameController
                 gameOver = true;
             }
 
-            // Checking if super food timer has expired (every 3 seconds)
-            if (DateTime.Now > nextSuperFood)
+            // Checking if super food timer has expired (every 30 seconds)
+            if (DateTime.UtcNow > nextSuperFood)
             {
-                // Spawn new super food and reset timer
-                superFoodPosition.Add((rand.Next(gameSize.Xstart, gameSize.Xend), rand.Next(gameSize.Ystart, gameSize.Yend)));
-                for (int i = 0; i < length; i++)
+                // Spawn new super food and reset timer - use pooled object if available
+                SuperApple newSuperApple;
+                if (superApplePool.Count > 0)
                 {
-                    // Ensure super food does not spawn on the snake or regular food
-                    while (superFoodPosition.Last() == playerSnake.GetBodySegments()[i] || superFoodPosition.Last() == foodPosition)
+                    newSuperApple = superApplePool[superApplePool.Count - 1];
+                    superApplePool.RemoveAt(superApplePool.Count - 1);
+                }
+                else
+                {
+                    newSuperApple = new SuperApple();
+                }
+                
+                newSuperApple.SetApple(gameSize, _random);
+                
+                // Ensure super food does not spawn on the snake or regular food
+                bool validPosition = false;
+                while (!validPosition)
+                {
+                    validPosition = true;
+                    for (int i = 0; i < length; i++)
                     {
-                        superFoodPosition.RemoveAt(superFoodPosition.Count - 1);
-                        superFoodPosition.Add((rand.Next(gameSize.Xstart, gameSize.Xend), rand.Next(gameSize.Ystart, gameSize.Yend)));
-                        i = 0; // Restart checking from the beginning
+                        if (newSuperApple.GetPositionTuple() == playerSnake.GetBodySegments()[i] || 
+                            newSuperApple.GetPositionTuple() == normalFood.GetPositionTuple())
+                        {
+                            newSuperApple.SetApple(gameSize, _random);
+                            validPosition = false;
+                            break;
+                        }
                     }
                 }
-                ConOutput.SpawnFood(superFoodPosition.Last(), ConsoleColor.Magenta);
-                nextSuperFood = DateTime.Now.AddSeconds(30);
-                superFoodCount++;
+                
+                specialFoods.Add(newSuperApple);
+                ConOutput.SpawnFood(newSuperApple.GetPositionTuple(), newSuperApple.AppleColor);
+                nextSuperFood = DateTime.UtcNow.AddSeconds(30);
             }
 
-            // Detecting food consumption
-            if (futureHeadPosition == foodPosition)
+            // Detecting normal food consumption
+            if (futureHeadPosition == normalFood.GetPositionTuple())
             {
                 playerSnake.Grow();
-                length += 3;
+                length += normalFood.GetLengthAdded();
 
                 // Spawn new food in the game area
-                foodPosition = (rand.Next(gameSize.Xstart, gameSize.Xend), rand.Next(gameSize.Ystart, gameSize.Yend));
-                for (int i = 0; i < length; i++)
+                normalFood.SetApple(gameSize, _random);
+                
+                // Ensure food does not spawn on the snake
+                bool validPosition = false;
+                while (!validPosition)
                 {
-                    // Ensure food does not spawn on the snake
-                    while (foodPosition == playerSnake.GetBodySegments()[i])
+                    validPosition = true;
+                    for (int i = 0; i < length; i++)
                     {
-                        foodPosition = (rand.Next(gameSize.Xstart, gameSize.Xend), rand.Next(gameSize.Ystart, gameSize.Yend));
-                        i = 0; // Restart checking from the beginning
+                        if (normalFood.GetPositionTuple() == playerSnake.GetBodySegments()[i])
+                        {
+                            normalFood.SetApple(gameSize, _random);
+                            validPosition = false;
+                            break;
+                        }
                     }
                 }
-                ConOutput.SpawnFood(foodPosition);
+                ConOutput.SpawnFood(normalFood.GetPositionTuple(), normalFood.AppleColor);
             }
-            else if (superFoodCount > 0)
+
+            // Detecting super food consumption
+            if (specialFoods.Count > 0)
             {
-                // If there is super food on the field, check for its consumption
-                // Detecting super food consumption
-                for (int i = 0; i < superFoodCount; i++)
+                for (int i = specialFoods.Count - 1; i >= 0; i--)
                 {
-                    if (futureHeadPosition == superFoodPosition[i])
+                    if (futureHeadPosition == specialFoods[i].GetPositionTuple())
                     {
                         playerSnake.Grow();
                         playerSnake.Grow(); // Super food grows the snake by 3*3 segments
                         playerSnake.Grow();
-                        length += 9;
+                        length += specialFoods[i].GetLengthAdded();
 
-                        // Remove the consumed super food from the list
-                        superFoodPosition.RemoveAt(i);
-                        superFoodCount--;
+                        // Return consumed super food to pool instead of discarding
+                        superApplePool.Add(specialFoods[i]);
+                        specialFoods.RemoveAt(i);
                         break;
                     }
                 }
@@ -275,7 +307,7 @@ public class GameController
 
         // Waiting for 300ms before showing Game Over screen
         nextTick = nextTick.AddMilliseconds(300);
-        while (DateTime.Now < nextTick) ;
+        while (DateTime.UtcNow < nextTick) ;
 
         // Ensure Highscores directory and file exist
         if (!Directory.Exists("Highscores"))
@@ -310,7 +342,7 @@ public class GameController
 
         // Waiting for 300ms before ending Game Over screen
         nextTick = nextTick.AddMilliseconds(300);
-        while (DateTime.Now < nextTick) ;
+        while (DateTime.UtcNow < nextTick) ;
         #endregion
     }
     #endregion
