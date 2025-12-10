@@ -338,10 +338,11 @@ public class GameController
         File.WriteAllText("Highscores/highscores.txt", highscoreTicks.ToString() + ";" + highscoreFood.ToString(), System.Text.Encoding.UTF8);
 
         ConOutput.GameOver();
-        KbdInput.ReadKey();
 
         // Waiting for 300ms before ending Game Over screen
-        nextTick = nextTick.AddMilliseconds(300);
+        Thread.Sleep(300);
+        KbdInput.ClearInputBuffer();
+        KbdInput.ReadKey();
         while (DateTime.UtcNow < nextTick) ;
         #endregion
     }

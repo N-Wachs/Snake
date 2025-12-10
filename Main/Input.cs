@@ -62,6 +62,14 @@
         {
             return Console.KeyAvailable;
         }
+
+        public void ClearInputBuffer()
+        {
+            while (Console.KeyAvailable)
+            {
+                Console.ReadKey(true);
+            }
+        }
         #endregion
     }
 }
