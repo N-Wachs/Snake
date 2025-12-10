@@ -1,6 +1,6 @@
 ﻿namespace Snake
 {
-    class Snake
+    public class Snake
     {
         #region Fields
         private List<(int X, int Y)> _bodySegments; // List of body segments represented by their coordinates
@@ -18,6 +18,8 @@
             get { return _snakeColor; }
             set { _snakeColor = value; }
         }
+        
+        public int Length => _bodySegments.Count;
         #endregion
 
         #region Constructors
@@ -61,13 +63,18 @@
             _bodySegments[0] = (_bodySegments[0].X + direction.DeltaX, _bodySegments[0].Y + direction.DeltaY);
         }
 
-        // Method to grow the snake by adding a new segment at the tail
-        public void Grow()
+        // Method to grow the snake by adding segments at the tail
+        public void Grow(int amount)
         {
+            if (amount <= 0) return;
+
             var tail = _bodySegments[_bodySegments.Count - 1];
-            _bodySegments.Add(tail); // Add a new segment at the tail's position
-            _bodySegments.Add(tail); // Add a new segment at the tail's position
-            _bodySegments.Add(tail); // Add a new segment at the tail's position
+            
+            // Add the specified number of segments at the tail position
+            for (int i = 0; i < amount; i++)
+            {
+                _bodySegments.Add(tail);
+            }
         }
 
         // Method to set the snake's color
@@ -85,6 +92,25 @@
         public List<(int X, int Y)> GetBodySegments()
         {
             return _bodySegments;
+        }
+
+        // Method to get body segments as HashSet for fast lookup
+        public HashSet<(int, int)> GetBodySegmentsSet()
+        {
+            return new HashSet<(int, int)>(_bodySegments);
+        }
+
+        // Method to check self-collision efficiently
+        public bool CheckSelfCollision((int X, int Y) position, int skipFirst = 3)
+        {
+            for (int i = skipFirst; i < _bodySegments.Count; i++)
+            {
+                if (_bodySegments[i] == position)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         #endregion
     }

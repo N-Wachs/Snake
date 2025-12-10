@@ -1,80 +1,61 @@
 using System.Numerics;
+using Snake.Interfaces;
 
 namespace Snake;
 
-public class Apple
+/// <summary>
+/// Standard food item that appears regularly in the game
+/// </summary>
+public class Apple : IConsumable
 {
     #region Fields
-    private Vector2 _position; // Position of the apple on the game grid
-    private ConsoleColor _appleColor; // Color of the apple
-    private int _lengthAdded; // Length added to the snake when this apple is eaten
+    private Vector2 _position;
+    private const int GROWTH_AMOUNT = 3;
     #endregion
 
-    #region Properties
-    private Vector2 Position
-    {
-        get { return _position; }
-        set { _position = value; }
-    }
-    private int X
-    {
-        get { return (int)_position.X; }
-        set { _position = new Vector2(value, _position.Y); }
-    }
-    private int Y
-    {
-        get { return (int)_position.Y; }
-        set { _position = new Vector2(_position.X, value); }
-    }
-    public ConsoleColor AppleColor => _appleColor; // Color of the apple
-    private int LengthAdded
-    {
-        get { return _lengthAdded; }
-        set { _lengthAdded = value; }
-    }
+    #region IConsumable Implementation
+    public (int X, int Y) Position => ((int)_position.X, (int)_position.Y);
+    public ConsoleColor Color => ConsoleColor.Red;
+    public int GrowthAmount => GROWTH_AMOUNT;
     #endregion
 
     #region Constructors
-    // Default constructor
     public Apple()
     {
-        _position = new Vector2(0, 0);
-        _appleColor = ConsoleColor.Red;
-        _lengthAdded = 3;
+        _position = Vector2.Zero;
     }
-    // Parameterized constructor
+
     public Apple(Vector2 position)
     {
         _position = position;
-        _appleColor = ConsoleColor.Red;
-        _lengthAdded = 3;
-    }
-    // Copy constructor
-    public Apple(Apple other)
-    {
-        _position = other._position;
-        _appleColor = other._appleColor;
-        _lengthAdded = other._lengthAdded;
     }
     #endregion
 
-    #region Methods
-    // Method to spawn the apple at a random position within the specified bounds
-    public void SetApple((int xStart, int xEnd, int yStart, int yEnd) gameSize, Random random = null)
+    #region IConsumable Methods
+    public void Respawn((int xStart, int xEnd, int yStart, int yEnd) gameSize, Random random)
     {
-        if (random == null)
-            random = new Random();
-        X = random.Next(gameSize.xStart, gameSize.xEnd + 1);
-        Y = random.Next(gameSize.yStart, gameSize.yEnd + 1);
+        _position = new Vector2(
+            random.Next(gameSize.xStart, gameSize.xEnd + 1),
+            random.Next(gameSize.yStart, gameSize.yEnd + 1)
+        );
     }
 
-    // Method to get the position of the apple
-    public Vector2 GetPosition() => Position;
+    public bool OnConsume(Snake snake)
+    {
+        // Standard apple just grows the snake
+        snake.Grow(GrowthAmount);
+        return true; // Remove after consumption
+    }
 
-    // Method to get position as tuple
-    public (int X, int Y) GetPositionTuple() => ((int)Position.X, (int)Position.Y);
+    public bool ShouldSpawn(DateTime currentTime)
+    {
+        // Normal apples are always present (managed by FoodManager)
+        return true;
+    }
 
-    // Method to get the length added by this apple
-    public int GetLengthAdded() => LengthAdded;
+    public void Update(DateTime currentTime)
+    {
+        // Normal apples don't need updates
+    }
     #endregion
 }
