@@ -1,6 +1,6 @@
 ﻿namespace Snake
 {
-    class Input
+    public class Input
     {
         #region Fields
         private Output _conOutput; // Output handler for displaying messages
@@ -61,6 +61,14 @@
         public bool IsKeyAvailable()
         {
             return Console.KeyAvailable;
+        }
+
+        public void ClearInputBuffer()
+        {
+            while (Console.KeyAvailable)
+            {
+                Console.ReadKey(true);
+            }
         }
         #endregion
     }
