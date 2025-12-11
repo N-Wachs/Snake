@@ -9,29 +9,20 @@ class Controller
     private Output _conOutput; // Output handler for displaying messages
     private MenuController _menuHandler; // Menu controller for handling menu operations
     private GameController _gameHandler; // Game controller for managing game logic
+    private List<IConsumable> _consumables = new List<IConsumable>
+    {
+        new Apple(),
+        new GoldenApple(),
+        new SuperApple()
+    }; // List of all the Consumables
     #endregion
 
     #region Properties
-    private Input KbdInput
-    {
-        get { return _kbdInput; }
-        set { _kbdInput = value; }
-    }
-    private Output ConOutput
-    {
-        get { return _conOutput; }
-        set { _conOutput = value; }
-    }
-    private MenuController MenuHandler
-    {
-        get { return _menuHandler; }
-        set { _menuHandler = value; }
-    }
-    private GameController GameHandler
-    {
-        get { return _gameHandler; }
-        set { _gameHandler = value; }
-    }
+    private Input KbdInput { get => _kbdInput; set => _kbdInput = value; }
+    private Output ConOutput { get => _conOutput; set => _conOutput = value; }
+    private MenuController MenuHandler { get => _menuHandler; set => _menuHandler = value; }
+    private GameController GameHandler { get => _gameHandler; set => _gameHandler = value; }
+    private List<IConsumable> Consumables { get => _consumables; set => _consumables = value; }
     #endregion
 
     #region Constructors
@@ -70,12 +61,12 @@ class Controller
             if (option == 0)
             {
                 // Start Game
-                GameHandler.StartGame(tickLengthMs, gameSize, snakeColor);
+                GameHandler.StartGame(tickLengthMs, gameSize, snakeColor, Consumables);
             }
             else if (option == 1)
             {
                 // Settings Menu
-                MenuHandler.SettingsMenu(ref tickLengthMs, ref gameSize, ref snakeColor);
+                MenuHandler.SettingsMenu(ref tickLengthMs, ref gameSize, ref snakeColor, Consumables);
             }
             else if (option == 2)
             {
@@ -95,7 +86,7 @@ class Controller
                 {
                     ConOutput.Clear();
                     ConOutput.Warning("No Highscores recorded yet!");
-                    Thread.Sleep(2500);
+                    KbdInput.WaitOrKey(2500);
                 }
             }
             else if (option == 3)
@@ -106,6 +97,8 @@ class Controller
                 exit = true;
             }
         } while (!exit);
+
+        KbdInput.WaitOrKey(3000);
     }
 
 

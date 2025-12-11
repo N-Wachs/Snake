@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using Snake.Interfaces;
 
 namespace Snake;
 

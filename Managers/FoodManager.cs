@@ -1,6 +1,5 @@
-using Snake.Interfaces;
 
-namespace Snake.Managers;
+namespace Snake;
 
 /// <summary>
 /// Manages all consumable items in the game with efficient collision detection

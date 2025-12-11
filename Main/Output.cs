@@ -97,11 +97,14 @@ namespace Snake
             Console.WriteLine(output);
             ResetColor();
         }
-
-        public void Write(string output)
+        public void Write(string output) => Console.Write(output);
+        public void WriteWithAnimation(string output, int delayMs)
         {
-            CursorVisible = false;
-            Console.Write(output);
+            foreach (char c in output)
+            {
+                Console.Write(c);
+                Thread.Sleep(delayMs);
+            }
         }
 
         public void ResetColor() => TextColor = ConsoleColor.White;
@@ -134,20 +137,12 @@ namespace Snake
             ResetColor();
         }
 
-        // Method to set window size
-        public void SetWindowSize(int width, int height)
-        {
-            Console.WindowWidth = width;
-            Console.WindowHeight = height;
-        }
-
         // The Welcomescreen
         public void WelcomeScreen()
         {
             CursorVisible = false;
             Clear();
             TextColor = ConsoleColor.Green;
-            SetWindowSize(80, 25);
             SetPos(10, 6);
             WriteLine(Styles.WelcomeArt);
 
@@ -238,7 +233,7 @@ namespace Snake
                     WriteText();
 
                 }
-                else if (pressed.Key == ConsoleKey.Enter)
+                else if (pressed.Key == ConsoleKey.Enter || pressed.Key == ConsoleKey.Spacebar)
                 {
                     // Select the current option
                     if (option >= 0 && option <= 3)
@@ -293,6 +288,7 @@ namespace Snake
         public void GameOutline((int Xstart, int Xend, int Ystart, int Yend) gameSize)
         {
             Console.CursorVisible = false;
+            Console.SetBufferSize(Console.WindowWidth, Console.WindowHeight);
             Console.Clear();
             bool defaultSize = false;
             ConsoleColor color = (ConsoleColor)(DateTime.UtcNow.Ticks % 14);

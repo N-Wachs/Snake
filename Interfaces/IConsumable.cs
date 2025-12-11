@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Snake.Interfaces;
+namespace Snake;
 
 /// <summary>
 /// Interface for all consumable items in the game (food, power-ups, etc.)

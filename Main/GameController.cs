@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using Snake.Managers;
 
 namespace Snake;
 
@@ -28,7 +27,7 @@ public class GameController
     #endregion
 
     #region Methods
-    public void StartGame(int tickLengthMs, (int Xstart, int Xend, int Ystart, int Yend) gameSize, ConsoleColor snakeColor)
+    public void StartGame(int tickLengthMs, (int Xstart, int Xend, int Ystart, int Yend) gameSize, ConsoleColor snakeColor, List<IConsumable> consumables)
     {
         #region Game Variables
         DateTime startTime = DateTime.UtcNow;
@@ -43,8 +42,15 @@ public class GameController
         FoodManager foodManager = new FoodManager(gameSize, _random);
         
         // Register consumables
-        foodManager.RegisterConsumable(new Apple()); // Normal apple always present
-        foodManager.RegisterConsumable(new SuperApple()); // Super apple spawns periodically
+        foreach (var consumable in consumables)
+        {
+            if (consumable is Apple)
+                foodManager.RegisterConsumable(new Apple());
+            else if (consumable is SuperApple)
+                foodManager.RegisterConsumable(new SuperApple());
+            else if (consumable is GoldenApple)
+                foodManager.RegisterConsumable(new GoldenApple());
+        }
         
         BigInteger ticksPlayed = 0;
         int visibleLength = 2;
@@ -141,7 +147,7 @@ public class GameController
             #endregion
 
             #region Collision Detection
-            var futureHead = (X: playerSnake.GetHead().X + direction.X, Y: playerSnake.GetHead().Y + direction.Y);
+            (int X, int Y) futureHead = (playerSnake.GetHead().X + direction.X, playerSnake.GetHead().Y + direction.Y);
 
             // Wall collision
             if (futureHead.X < gameSize.Xstart || futureHead.X > gameSize.Xend || 
@@ -159,7 +165,7 @@ public class GameController
             }
 
             // Food collision
-            var consumedItem = foodManager.CheckCollision(futureHead);
+            IConsumable consumedItem = foodManager.CheckCollision(futureHead);
             if (consumedItem != null)
             {
                 foodManager.ConsumeItem(consumedItem, playerSnake);
@@ -170,7 +176,7 @@ public class GameController
             foodManager.Update(DateTime.UtcNow);
             
             // Render any newly spawned food
-            foreach (var consumable in foodManager.GetActiveConsumables())
+            foreach (IConsumable consumable in foodManager.GetActiveConsumables())
             {
                 _conOutput.SpawnFood(consumable.Position, consumable.Color);
             }
