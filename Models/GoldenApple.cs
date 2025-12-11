@@ -3,19 +3,24 @@ using System.Numerics;
 namespace Snake;
 
 /// <summary>
-/// Example of an extendable special apple - Golden Apple that gives bonus points
-/// This demonstrates how easy it is to add new consumable types
+/// Represents a special consumable item that appears in the game and provides significant growth and bonus points when
+/// collected.
 /// </summary>
+/// <remarks>A golden apple is a rare item that can be triggered to spawn under certain game events, such as when
+/// a normal apple is eaten. It remains active for a limited time before disappearing if not collected. Consuming a
+/// golden apple grants the snake a large growth boost and may award additional bonus points or trigger special effects,
+/// depending on game implementation.</remarks>
 public class GoldenApple : IConsumable
 {
     #region Fields
     private Vector2 _position;
-    private DateTime _spawnTime;
     private DateTime _despawnTime;
+    private DateTime _spawnTime;
     private bool _isActive;
-    private const int GROWTH_AMOUNT = 5;
+    private bool _shouldSpawn;
+    private const int GROWTH_AMOUNT = 50;
     private const int LIFETIME_SECONDS = 10; // Disappears after 10 seconds
-    private const int SPAWN_CHANCE_PERCENT = 5; // 5% chance to spawn when normal apple is eaten
+    private const int SPAWN_CHANCE_PERCENT = 2; // 2% chance to spawn when normal apple is eaten
     #endregion
 
     #region IConsumable Implementation
@@ -54,12 +59,8 @@ public class GoldenApple : IConsumable
         // Golden apple gives growth and could trigger special effects
         snake.Grow(GrowthAmount);
         
-        // Here you could add:
-        // - Bonus points
-        // - Speed boost
-        // - Temporary invincibility
-        // - Any other special effect
-        
+        snake.SetColor(ConsoleColor.Yellow); // Temporary color change effect
+
         _isActive = false;
         return true; // Remove after consumption
     }
@@ -67,8 +68,9 @@ public class GoldenApple : IConsumable
     public bool ShouldSpawn(DateTime currentTime)
     {
         // Golden apples don't auto-spawn, they're triggered by game events
-        // This would be handled by the game logic
-        return false;
+        bool value = _shouldSpawn;
+        _shouldSpawn = false; // Reset after check
+        return value;
     }
 
     public void Update(DateTime currentTime)
@@ -86,9 +88,9 @@ public class GoldenApple : IConsumable
     /// Attempts to spawn a golden apple based on chance
     /// Call this when a normal apple is eaten
     /// </summary>
-    public static bool RollForSpawn(Random random)
+    public void RollForSpawn(Random random)
     {
-        return random.Next(100) < SPAWN_CHANCE_PERCENT;
+        _shouldSpawn = random.Next(100) < SPAWN_CHANCE_PERCENT;
     }
 
     public void Deactivate()

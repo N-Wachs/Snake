@@ -12,11 +12,13 @@
 
 - Einstellbare Geschwindigkeit
 
-- Zwei Apfeltypen:
+- Drei Apfeltypen:
 
 - Roter Apfel: erscheint regulär, verlängert die Snake um +3
 
 - Lilaner Apfel: erscheint alle 30 Sekunden, verlängert um +9
+
+- Goldener Apfel: 2% Chance spawn nach essen von Rotem Apfel, despawnt nach 10 Sekunden, verlängert um + 50
 
 - Highscore-System: speichert höchste erreichte Länge und überlebte Zeit lokal
 
