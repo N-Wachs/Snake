@@ -1,4 +1,3 @@
-
 namespace Snake;
 
 /// <summary>
@@ -12,6 +11,7 @@ public class FoodManager
     private readonly HashSet<(int, int)> _occupiedPositions;
     private readonly Random _random;
     private readonly (int xStart, int xEnd, int yStart, int yEnd) _gameSize;
+    private readonly List<IConsumable> _expiredConsumables; // Track expired items for visual cleanup
     #endregion
 
     #region Constructors
@@ -20,6 +20,7 @@ public class FoodManager
         _activeConsumables = new List<IConsumable>();
         _inactiveConsumables = new List<IConsumable>();
         _occupiedPositions = new HashSet<(int, int)>();
+        _expiredConsumables = new List<IConsumable>();
         _random = random;
         _gameSize = gameSize;
     }
@@ -46,10 +47,13 @@ public class FoodManager
     /// </summary>
     public void Update(DateTime currentTime)
     {
+        // Clear expired list from previous frame
+        _expiredConsumables.Clear();
+
         // Check inactive consumables for spawning
         for (int i = _inactiveConsumables.Count - 1; i >= 0; i--)
         {
-            var consumable = _inactiveConsumables[i];
+            IConsumable consumable = _inactiveConsumables[i];
             if (consumable.ShouldSpawn(currentTime))
             {
                 _inactiveConsumables.RemoveAt(i);
@@ -57,10 +61,23 @@ public class FoodManager
             }
         }
 
-        // Update active consumables
-        foreach (var consumable in _activeConsumables)
+        // Update active consumables and check for expired GoldenApples
+        for (int i = _activeConsumables.Count - 1; i >= 0; i--)
         {
+            IConsumable consumable = _activeConsumables[i];
             consumable.Update(currentTime);
+
+            // Check if GoldenApple has expired
+            if (consumable is GoldenApple golden && !golden.IsActive)
+            {
+                // Track for visual cleanup
+                _expiredConsumables.Add(consumable);
+                
+                // Remove from active and move to inactive
+                _activeConsumables.RemoveAt(i);
+                _occupiedPositions.Remove(consumable.Position);
+                _inactiveConsumables.Add(consumable);
+            }
         }
     }
 
@@ -92,7 +109,7 @@ public class FoodManager
             _occupiedPositions.Remove(consumable.Position);
 
             // Check if it should be tracked for respawning
-            if (consumable is SuperApple)
+            if (!(consumable is Apple))
             {
                 _inactiveConsumables.Add(consumable);
             }
@@ -100,6 +117,13 @@ public class FoodManager
             {
                 // Regular apple - respawn immediately
                 SpawnConsumable(consumable);
+                foreach (var inactive in _inactiveConsumables)
+                {
+                    if (inactive is GoldenApple)
+                    {
+                        ((GoldenApple)inactive).RollForSpawn(_random);
+                    }
+                }
             }
         }
     }
@@ -108,6 +132,11 @@ public class FoodManager
     /// Gets all active consumables for rendering
     /// </summary>
     public IReadOnlyList<IConsumable> GetActiveConsumables() => _activeConsumables.AsReadOnly();
+
+    /// <summary>
+    /// Gets consumables that expired this frame and need visual cleanup
+    /// </summary>
+    public IReadOnlyList<IConsumable> GetExpiredConsumables() => _expiredConsumables.AsReadOnly();
 
     /// <summary>
     /// Updates occupied positions (should be called after snake moves)
