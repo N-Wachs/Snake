@@ -113,7 +113,7 @@ class Controller
     private async Task CheckForUpdatesAsync()
     {
         string versionUrl = "https://raw.githubusercontent.com/N-Wachs/Snake/main/version.txt";
-        string currentVersion = "1.2.1";
+        string currentVersion = "1.3.0";
 
         try
         {
@@ -139,3 +139,4 @@ class Controller
     }
     #endregion
 }
+
