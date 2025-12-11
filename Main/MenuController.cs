@@ -91,8 +91,8 @@ public class MenuController
         #endregion
 
         // Initial render
-        RenderLeftSide(consumables, option, leftSide);
         RenderRightSide(tickLengthMs, gameSize, snakeColor, rightSubOption, !leftSide);
+        RenderLeftSide(consumables, option, leftSide);
 
         #region Main Loop
         do
