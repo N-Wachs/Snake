@@ -175,6 +175,12 @@ public class GameController
             foodManager.UpdateOccupiedPositions(playerSnake.GetBodySegmentsSet());
             foodManager.Update(DateTime.UtcNow);
             
+            // Clear expired consumables from screen
+            foreach (IConsumable expired in foodManager.GetExpiredConsumables())
+            {
+                _conOutput.ClearArea(expired.Position.X, expired.Position.Y, 1);
+            }
+            
             // Render any newly spawned food
             foreach (IConsumable consumable in foodManager.GetActiveConsumables())
             {
