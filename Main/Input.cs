@@ -8,16 +8,11 @@
         #endregion
 
         #region Properties
-        private Output OHandler
-        {
-            get { return _conOutput; }
-            set { _conOutput = value; }
-        }
-        private ConsoleKeyInfo Pressed
-        {
-            get { return _pressed; }
-            set { _pressed = value; }
-        }
+        private Output OHandler { get => _conOutput; set => _conOutput = value; }
+        private ConsoleKeyInfo Pressed { get => _pressed; set => _pressed = value;  }
+
+        public ConsoleKeyInfo LastPressedKey => _pressed;
+        public int KeyChar => _pressed.KeyChar;
         #endregion
 
         #region Constructors
@@ -38,36 +33,29 @@
 
         #region Methods
         // Method to read a key press from the console
-        public ConsoleKeyInfo ReadKey(bool intercept = true)
-        {
-            if (!intercept)
-            {
-                Console.CursorVisible = true;
-            }
-            else
-            {
-                Console.CursorVisible = false;
-            }
-            Pressed = Console.ReadKey(intercept);
+        public ConsoleKeyInfo ReadKey(bool intercept = true) 
+        { 
+            Pressed = Console.ReadKey(intercept); 
             return Pressed;
         }
 
-        // Method to get the last pressed key
-        public ConsoleKeyInfo GetPressedKey()
-        {
-            return Pressed;
-        }
-
-        public bool IsKeyAvailable()
-        {
-            return Console.KeyAvailable;
-        }
+        public bool IsKeyAvailable() => Console.KeyAvailable;
 
         public void ClearInputBuffer()
         {
             while (Console.KeyAvailable)
             {
                 Console.ReadKey(true);
+            }
+        }
+
+        public void WaitOrKey(int timeoutMs)
+        {
+            DateTime waitTime = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+            while (waitTime > DateTime.UtcNow)
+            {
+                if (Console.KeyAvailable) return; 
+                Thread.Sleep(20); // Small delay to prevent busy waiting
             }
         }
         #endregion

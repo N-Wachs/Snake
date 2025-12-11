@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using Snake.Managers;
 
 namespace Snake;
 
@@ -28,7 +27,7 @@ public class GameController
     #endregion
 
     #region Methods
-    public void StartGame(int tickLengthMs, (int Xstart, int Xend, int Ystart, int Yend) gameSize, ConsoleColor snakeColor)
+    public void StartGame(int tickLengthMs, (int Xstart, int Xend, int Ystart, int Yend) gameSize, ConsoleColor snakeColor, List<IConsumable> consumables)
     {
         #region Game Variables
         DateTime startTime = DateTime.UtcNow;
@@ -43,8 +42,8 @@ public class GameController
         FoodManager foodManager = new FoodManager(gameSize, _random);
         
         // Register consumables
-        foodManager.RegisterConsumable(new Apple()); // Normal apple always present
-        foodManager.RegisterConsumable(new SuperApple()); // Super apple spawns periodically
+        foreach (var consumable in consumables) 
+            foodManager.RegisterConsumable(consumable);
         
         BigInteger ticksPlayed = 0;
         int visibleLength = 2;
